@@ -22,6 +22,8 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -58,37 +60,43 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                final LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+                Handler handler = new Handler();
 
-                try
-                {
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, new LocationListener() {
-                        @Override
-                        public void onLocationChanged(Location location) {
-                            _tilLatitude.getEditText().setText(String.valueOf(location.getLatitude()));
-                            _tilLongitude.getEditText().setText(String.valueOf(location.getLongitude()));
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        final LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
 
-                            initSocket();
+                        try
+                        {
+                            String host = _tilHost.getEditText().getText().toString();
+                            int port = Integer.parseInt(_tilPort.getEditText().getText().toString());
+
+                            MyLocationListener myLocationListener = new MyLocationListener(host, port, "muhammed", "123456");
+
+                            int count = 0;
+
+                            while (count < 10) {
+                                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, myLocationListener);
+
+                                try {
+                                    Thread.currentThread().sleep(10000);
+                                }
+                                catch (InterruptedException ex) {
+                                    ex.printStackTrace();
+
+                                    break;
+                                }
+
+                                count++;
+                            }
+                        } catch (SecurityException ex) {
+                            Toast.makeText(MainActivity.this, ex.getMessage(), Toast.LENGTH_LONG);
                         }
+                    }
+                };
 
-                        @Override
-                        public void onStatusChanged(String provider, int status, Bundle extras) {
-
-                        }
-
-                        @Override
-                        public void onProviderEnabled(String provider) {
-
-                        }
-
-                        @Override
-                        public void onProviderDisabled(String provider) {
-
-                        }
-                    });
-                } catch (SecurityException ex) {
-
-                }
+                handler.post(runnable);
             }
         });
     }
@@ -125,68 +133,5 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return true;
-    }
-
-    private void initSocket() {
-        final Handler handler = new Handler(Looper.getMainLooper());
-
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try
-                {
-                    String host = _tilHost.getEditText().getText().toString();
-                    int port = Integer.parseInt(_tilPort.getEditText().getText().toString());
-
-                    _socket = new Socket();
-                    _socket.connect(new InetSocketAddress(host, port), 10000);
-
-                    //InputStream is = _socket.getInputStream();
-                    //InputStreamReader isr = new InputStreamReader(is);
-
-                    String latitude = _tilLatitude.getEditText().getText().toString();
-                    String longitude = _tilLongitude.getEditText().getText().toString();
-
-                    String message = "Enlem: " + latitude + ". Boylam: " + longitude + ".";
-
-                    OutputStream os = _socket.getOutputStream();
-                    os.write(message.getBytes(), 0, message.length());
-                    os.flush();
-
-                    closeSocket();
-                } catch (UnknownHostException ex) {
-                    final String message = ex.getMessage();
-
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(MainActivity.this, "UnknownHostException: " + message, Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                } catch (IOException ex) {
-                    final String message = ex.getMessage();
-
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(MainActivity.this, "IOException: " + message, Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
-            }
-        });
-
-        thread.start();
-    }
-
-    private void closeSocket() {
-        if (_socket.isConnected()) {
-            try
-            {
-                _socket.close();
-            } catch (IOException ex) {
-
-            }
-        }
     }
 }
