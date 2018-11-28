@@ -11,8 +11,8 @@ class SocketDataReader:
             'client_type': splitted_data[0],
             'username': splitted_data[1],
             'password': splitted_data[2],
-            'latitude': splitted_data[3],
-            'longitude': splitted_data[4]
+            'latitude': float(splitted_data[3]),
+            'longitude': float(splitted_data[4])
         }
 
         return model

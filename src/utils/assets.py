@@ -1,4 +1,6 @@
 from datetime import datetime
+import math
+import settings
 
 
 class Location:
@@ -29,7 +31,7 @@ class Location:
         return latitudeEquals and longitudeEquals
 
 
-class DataModel:
+class DataModel(object):
     def __init__(self, username, location):
         self.__username = username
         self.__location = location
@@ -45,8 +47,21 @@ class DataModel:
 
     @location.setter
     def location(self, value):
-        self.__date = datetime.today()
+        self.__date = datetime.now()
         self.__location = value
+
+
+    def is_near(self, location, max_distance, now, deltatime):
+        dx = self.__location.latitude - location.latitude
+        dy = self.__location.longitude - location.longitude
+
+        if now - self.__date > deltatime:
+            print("Time...")
+            return False
+
+        print(math.sqrt((dx * dx) + (dy * dy)), max_distance)
+
+        return math.sqrt((dx * dx) + (dy * dy)) < max_distance
 
 
 class LocationManager:
@@ -74,3 +89,16 @@ class LocationManager:
     @property
     def length(self):
         return len(self._list)
+
+    def search(self, latitude, longitude):
+        location = Location(latitude, longitude)
+
+        now = datetime.now()
+
+        near_data_models = []
+
+        for data_model in self._list:
+            if data_model.is_near(location, settings.MAX_DISTANCE, now, settings.DELTA_TIME):
+                near_data_models.append(data_model)
+
+        return near_data_models

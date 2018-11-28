@@ -7,17 +7,20 @@ BUFFER_SIZE = 1024
 DELAY_TIME = 5
 
 CLIENT_TYPE = "raspberry"
-LATITUDE = "23"
-LONGITUDE = "45"
+LATITUDE = "35"
+LONGITUDE = "-120"
 
-def send_location():
+
+def get_locations(latitude, longitude):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect((HOST, PORT))
 
     data_list = [
         CLIENT_TYPE,
-        LATITUDE,
-        LONGITUDE
+        "",
+        "",
+        latitude,
+        longitude
     ]
 
     data = ",".join(data_list)
@@ -26,13 +29,17 @@ def send_location():
 
     received_data = client_socket.recv(BUFFER_SIZE)
 
-    if received_data == "OK":
-        print("Data sent.")
-    elif received_data == "ERR":
-        print("An error occured!")
-
     client_socket.close()
 
+    if received_data == "NO":
+        return []
+
+    return [ m.split(',') for m in received_data.split(";") ]
+
+
 while True:
-    send_location()
+    locations = get_locations(LATITUDE, LONGITUDE)
+
+    print(locations)
+
     time.sleep(DELAY_TIME)

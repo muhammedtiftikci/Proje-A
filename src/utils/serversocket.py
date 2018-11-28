@@ -34,18 +34,29 @@ while True:
     if model['client_type'] == "android":
         if data_reader.check_user(model):
             print("Username: " + model['username'])
-            print("Latitude: " + model['latitude'])
-            print("Longitude: " + model['longitude'])
+            print("Latitude: " + str(model['latitude']))
+            print("Longitude: " + str(model['longitude']))
 
             location_manager.add_or_update(model['username'], model['latitude'], model['longitude'])
 
             connected_socket.sendall("OK")
         else:
             connected_socket.sendall("ERR")
+    elif model['client_type'] == "raspberry":
+        latitude = model['latitude']
+        longitude = model['longitude']
 
+        data_models = location_manager.search(latitude, longitude)
 
+        location_list = [ [ dm.username, str(dm.location.latitude), str(dm.location.longitude) ] for dm in data_models ]
 
-    elif client_type == "raspberry":
-        pass
+        location_list_str = [ ",".join(location) for location in location_list ]
+
+        data  = ";".join(location_list_str)
+
+        if data == "":
+            connected_socket.sendall("NO")
+        else:
+            connected_socket.sendall(data)
 
 server_socket.close()
