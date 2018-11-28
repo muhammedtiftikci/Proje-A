@@ -35,11 +35,13 @@ public class MainActivity extends AppCompatActivity {
     private TextInputLayout _tilHost;
     private TextInputLayout _tilPort;
     private TextInputLayout _tilUsername;
+    private TextInputLayout _tilPassword;
     private Button _btnConnect;
     private TextInputLayout _tilLatitude;
     private TextInputLayout _tilLongitude;
 
-    private Socket _socket;
+    LocationManager _locationManager;
+    MyLocationListener _myLocationListener;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -49,62 +51,50 @@ public class MainActivity extends AppCompatActivity {
         _tilHost = findViewById(R.id.tilHost);
         _tilPort = findViewById(R.id.tilPort);
         _tilUsername = findViewById(R.id.tilUsername);
+        _tilPassword = findViewById(R.id.tilPassword);
         _btnConnect = findViewById(R.id.btnConnect);
         _tilLatitude = findViewById(R.id.tilLatitude);
         _tilLongitude = findViewById(R.id.tilLongitude);
 
+        _locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        _myLocationListener = new MyLocationListener(_locationManager, _tilLatitude, _tilLongitude);
+
         _btnConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!checkPermissions()) {
-                    return;
-                }
+                if (_myLocationListener.isStarted()) {
+                    _myLocationListener.stop();
 
-                Handler handler = new Handler();
+                    _btnConnect.setText("Start");
+                } else {
+                    if (!checkPermissions()) {
+                        return;
+                    }
 
-                Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        final LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+                    Handler handler = new Handler();
 
-                        try
-                        {
+                    Runnable runnable = new Runnable() {
+                        @Override
+                        public void run() {
                             String host = _tilHost.getEditText().getText().toString();
                             int port = Integer.parseInt(_tilPort.getEditText().getText().toString());
+                            String username = _tilUsername.getEditText().getText().toString();
+                            String password = _tilPassword.getEditText().getText().toString();
 
-                            MyLocationListener myLocationListener = new MyLocationListener(host, port, "muhammed", "123456");
-
-                            int count = 0;
-
-                            while (count < 10) {
-                                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, myLocationListener);
-
-                                try {
-                                    Thread.currentThread().sleep(10000);
-                                }
-                                catch (InterruptedException ex) {
-                                    ex.printStackTrace();
-
-                                    break;
-                                }
-
-                                count++;
-                            }
-                        } catch (SecurityException ex) {
-                            Toast.makeText(MainActivity.this, ex.getMessage(), Toast.LENGTH_LONG);
+                            _myLocationListener.start(host, port, username, password);
                         }
-                    }
-                };
+                    };
 
-                handler.post(runnable);
+                    handler.post(runnable);
+
+                    _btnConnect.setText("Stop");
+                }
             }
         });
     }
 
     private boolean checkPermissions() {
-        final LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+        if (!_locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             Toast.makeText(MainActivity.this, "Telefonun GPS özelliğini aktif etmelisiniz.", Toast.LENGTH_LONG).show();
 
             return false;

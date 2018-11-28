@@ -6,11 +6,9 @@ PORT = 37037
 BUFFER_SIZE = 1024
 DELAY_TIME = 5
 
-CLIENT_TYPE = "android"
-USERNAME = "muhammed"
-PASSWORD = "123456"
-LOCATION_E = "23"
-LOCATION_B = "45"
+CLIENT_TYPE = "raspberry"
+LATITUDE = "23"
+LONGITUDE = "45"
 
 def send_location():
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -18,10 +16,8 @@ def send_location():
 
     data_list = [
         CLIENT_TYPE,
-        USERNAME,
-        PASSWORD,
-        LOCATION_E,
-        LOCATION_B
+        LATITUDE,
+        LONGITUDE
     ]
 
     data = ",".join(data_list)
