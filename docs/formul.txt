@@ -1,0 +1,10 @@
+# Raspberry Pi GPS Location  Convert
+
+dmm -> dd
+
+4125.56122, 3346.84277
+DDmm.mmmmm, DDmm.mmmmm
+
+41 25.56122, 33 46.84277
+
+d = d + "." + (mmmmmm / 60)
