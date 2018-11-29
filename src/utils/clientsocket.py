@@ -1,45 +1,32 @@
 import socket
-import time
 
-HOST = "127.0.0.1"
-PORT = 37037
-BUFFER_SIZE = 1024
-DELAY_TIME = 5
+class ClientSocket:
+    def __init__(self, host, port, buffer_size):
+        self.__host = host
+        self.__port = port
+        self.__buffer_size = buffer_size
 
-CLIENT_TYPE = "raspberry"
-LATITUDE = "35"
-LONGITUDE = "-120"
+    def get_locations(self, latitude, longitude):
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_socket.connect((self.__host, self.__port))
 
+        data_list = [
+            "raspberry",
+            "",
+            "",
+            latitude,
+            longitude
+        ]
 
-def get_locations(latitude, longitude):
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((HOST, PORT))
+        data = ",".join(data_list)
 
-    data_list = [
-        CLIENT_TYPE,
-        "",
-        "",
-        latitude,
-        longitude
-    ]
+        client_socket.sendall(data)
 
-    data = ",".join(data_list)
+        received_data = client_socket.recv(self.__buffer_size)
 
-    client_socket.sendall(data)
+        client_socket.close()
 
-    received_data = client_socket.recv(BUFFER_SIZE)
+        if received_data == "NO":
+            return []
 
-    client_socket.close()
-
-    if received_data == "NO":
-        return []
-
-    return [ m.split(',') for m in received_data.split(";") ]
-
-
-while True:
-    locations = get_locations(LATITUDE, LONGITUDE)
-
-    print(locations)
-
-    time.sleep(DELAY_TIME)
+        return [ m.split(',') for m in received_data.split(";") ]
