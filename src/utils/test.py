@@ -1,4 +1,15 @@
-import assets
+import RPi.GPIO as GPIO
+from time import sleep
 
-dm = assets.DataModel("met", assets.Location(1,2))
-dm.location = assets.Location(2,3)
+pinBuzzer = 40
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(pinBuzzer, GPIO.OUT)
+
+while True:
+	GPIO.output(pinBuzzer, GPIO.HIGH)
+	sleep(1)
+
+	GPIO.output(pinBuzzer, GPIO.LOW)
+	sleep(1)
+

@@ -4,6 +4,10 @@ import serial
 
 from clientsocket import ClientSocket
 
+PIN_BUZZER = 40
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(PIN_BUZZER, GPIO.OUT)
 
 client_socket = ClientSocket("192.168.1.8", 37037, 1024)
 
@@ -48,4 +52,9 @@ while True:
 		print("Get:")
 		print(locations)
 
-		sleep(5)
+		if len(locations) > 0:
+			GPIO.output(PIN_BUZZER, GPIO.HIGH)
+		else:
+			GPIO.output(PIN_BUZZER, GPIO.LOW)
+
+		sleep(2)
