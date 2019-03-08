@@ -22,10 +22,12 @@ server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind((HOST, PORT))
 server_socket.listen(10)
 
+print("Server started at {} port.".format(PORT))
+
 while True:
     connected_socket, addr = server_socket.accept()
 
-    print("A client connected:", addr)
+    print("A client connected: {}".format(addr))
 
     received_data = connected_socket.recv(BUFFER_SIZE)
 

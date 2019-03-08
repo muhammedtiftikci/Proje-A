@@ -56,7 +56,7 @@ class DataModel(object):
         dy = self.__location.longitude - location.longitude
 
         if now - self.__date > deltatime:
-            print("Time...")
+            print("The coordinate timed out.")
             return False
 
         print(math.sqrt((dx * dx) + (dy * dy)), max_distance)
