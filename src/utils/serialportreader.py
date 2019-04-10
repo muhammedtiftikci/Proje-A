@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 from time import sleep
 import serial
+from direction import Coordinate
 
 from clientsocket import ClientSocket
 
